@@ -26,20 +26,10 @@ void put_request_handler(const string &serialized, StoreType &unmerged_store,
     auto lattice = std::make_shared<MultiKeyCausalLattice<SetLattice<string>>>(
         to_multi_key_causal_payload(
             deserialize_multi_key_causal(tuple.payload())));
-    // first, update unmerged store
-    if (unmerged_store.find(key) == unmerged_store.end()) {
-      unmerged_store[key] = lattice;
-    } else {
-      unsigned comp_result = causal_comparison(unmerged_store[key], lattice);
-      if (comp_result == kCausalLess) {
-        unmerged_store[key] = lattice;
-      } else if (comp_result == kCausalConcurrent) {
-        unmerged_store[key] = causal_merge(unmerged_store[key], lattice);
-      }
-    }
     // write to KVS
-    string req_id = client->put_async(key, serialize(*unmerged_store[key]),
+    string req_id = client->put_async(key, serialize(*lattice),
                                       LatticeType::MULTI_CAUSAL);
+
     request_id_to_address_map[req_id] = request.response_address();
   }
 }
