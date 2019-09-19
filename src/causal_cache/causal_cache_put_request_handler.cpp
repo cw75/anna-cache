@@ -21,12 +21,14 @@ void put_request_handler(const string &serialized, StoreType &unmerged_store,
                          KvsClientInterface *client, logger log) {
   CausalRequest request;
   request.ParseFromString(serialized);
-  log->info("the client id is {}", request.id());
   for (CausalTuple tuple : request.tuples()) {
     Key key = tuple.key();
     auto lattice = std::make_shared<MultiKeyCausalLattice<SetLattice<string>>>(
         to_multi_key_causal_payload(
             deserialize_multi_key_causal(tuple.payload())));
+    unsigned size = lattice->reveal().value.reveal().size();
+    log->info("key to put is {}", key);
+    log->info("payload size is {}", size);
     // write to KVS
     string req_id = client->put_async(key, serialize(*lattice),
                                       LatticeType::MULTI_CAUSAL);
