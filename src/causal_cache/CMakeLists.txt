@@ -24,6 +24,6 @@ SET(CAUSAL_CACHE_SOURCE
 	causal_cache_periodic_migration_handler.cpp
 )
 
-ADD_EXECUTABLE(anna-causal-cache ${CAUSAL_CACHE_SOURCE})
-TARGET_LINK_LIBRARIES(anna-causal-cache ${CACHE_DEPENDENCIES})
-ADD_DEPENDENCIES(anna-causal-cache hydro-zmq zeromq zeromqcpp)
+ADD_EXECUTABLE(anna-cache ${CAUSAL_CACHE_SOURCE})
+TARGET_LINK_LIBRARIES(anna-cache ${CACHE_DEPENDENCIES})
+ADD_DEPENDENCIES(anna-cache hydro-zmq zeromq zeromqcpp)

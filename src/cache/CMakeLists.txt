@@ -14,7 +14,7 @@
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.6 FATAL_ERROR)
 
-ADD_EXECUTABLE(anna-cache cache.cpp)
-TARGET_LINK_LIBRARIES(anna-cache ${CACHE_DEPENDENCIES})
-ADD_DEPENDENCIES(anna-cache hydro-zmq zeromq zeromqcpp)
+ADD_EXECUTABLE(xxx cache.cpp)
+TARGET_LINK_LIBRARIES(xxx ${CACHE_DEPENDENCIES})
+ADD_DEPENDENCIES(xxx hydro-zmq zeromq zeromqcpp)
 
