@@ -28,7 +28,9 @@ void get_request_handler(
     const CausalCacheThread &cct,
     map<string, set<Address>> &client_id_to_address_map) {
   CausalRequest request;
+  log->info("parsing causal request");
   request.ParseFromString(serialized);
+  log->info("the client id is {}", request.id());
 
   bool covered_locally = true;
   set<Key> read_set;
@@ -36,6 +38,7 @@ void get_request_handler(
 
   // check if the keys are covered locally
   if (request.consistency() == ConsistencyType::SINGLE) {
+    log->info("single mode");
     for (CausalTuple tuple : request.tuples()) {
       Key key = tuple.key();
       read_set.insert(key);
@@ -66,6 +69,7 @@ void get_request_handler(
       kZmqUtil->send_string(resp_string, &pushers[request.response_address()]);
     }
   } else if (request.consistency() == ConsistencyType::MULTI) {
+    log->info("multi mode");
     // first, we compute the condensed version of prior causal chains
     map<Key, std::unordered_set<VectorClock, VectorClockHash>> causal_frontier;
 
@@ -114,6 +118,7 @@ void get_request_handler(
 
     for (CausalTuple tuple : request.tuples()) {
       Key key = tuple.key();
+      log->info("key is {}", key);
       read_set.insert(key);
       key_set.insert(key);
 
