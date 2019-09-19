@@ -21,6 +21,7 @@ void put_request_handler(const string &serialized, StoreType &unmerged_store,
                          KvsClientInterface *client, logger log) {
   CausalRequest request;
   request.ParseFromString(serialized);
+  log->info("the client id is {}", request.id());
   for (CausalTuple tuple : request.tuples()) {
     Key key = tuple.key();
     auto lattice = std::make_shared<MultiKeyCausalLattice<SetLattice<string>>>(
