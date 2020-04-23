@@ -392,6 +392,8 @@ void run(KvsClientInterface *client, Address ip, unsigned thread_id) {
     if (duration >= kCacheReportThreshold) {
       StringSet set;
 
+      log->info("Cache contains {} keys.", key_type_map.size());
+
       for (const auto &pair : key_type_map) {
         set.add_keys(pair.first);
       }
