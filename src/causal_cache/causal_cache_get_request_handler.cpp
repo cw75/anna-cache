@@ -36,8 +36,10 @@ void get_request_handler(
 
   // check if the keys are covered locally
   if (request.consistency() == ConsistencyType::SINGLE) {
+    log->info("single mode");
     for (CausalTuple tuple : request.tuples()) {
       Key key = tuple.key();
+      log->info("key is {}", key);
       read_set.insert(key);
       key_set.insert(key);
 
@@ -49,9 +51,11 @@ void get_request_handler(
       }
     }
     if (!covered_locally) {
+      log->info("not covered");
       pending_single_key_metadata[request.response_address()] =
           PendingClientMetadata(request.id(), read_set, to_cover);
     } else {
+      log->info("covered");
       CausalResponse response;
 
       for (const Key &key : read_set) {
@@ -66,6 +70,7 @@ void get_request_handler(
       kZmqUtil->send_string(resp_string, &pushers[request.response_address()]);
     }
   } else if (request.consistency() == ConsistencyType::MULTI) {
+    log->info("multi mode");
     // first, we compute the condensed version of prior causal chains
     map<Key, std::unordered_set<VectorClock, VectorClockHash>> causal_frontier;
 

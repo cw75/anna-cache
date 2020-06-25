@@ -29,8 +29,10 @@ void kvs_response_handler(
     map<string, set<Address>> &client_id_to_address_map,
     map<string, Address> &request_id_to_address_map) {
   Key key = response.tuples(0).key();
+  log->info("got response from Anna for key {}", key);
   // first, check if the request failed
   if (response.error() == AnnaError::TIMEOUT) {
+    log->info("request to Anna timed out");
     if (response.type() == RequestType::GET) {
       client->get_async(key);
     } else {
@@ -48,6 +50,7 @@ void kvs_response_handler(
     }
   } else {
     if (response.type() == RequestType::GET) {
+      log->info("handling GET response");
       auto lattice =
           std::make_shared<MultiKeyCausalLattice<SetLattice<string>>>();
       if (response.tuples(0).error() != 1) {
@@ -62,6 +65,7 @@ void kvs_response_handler(
                        to_fetch_map, cover_map, pushers, client, log, cct,
                        client_id_to_address_map);
     } else {
+      log->info("handling PUT response");
       if (request_id_to_address_map.find(response.response_id()) ==
           request_id_to_address_map.end()) {
         if (response.tuples(0).lattice_type() != LatticeType::LWW) {
