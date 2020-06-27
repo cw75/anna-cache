@@ -274,16 +274,35 @@ void respond_to_client(
     const CausalCacheThread &cct, const StoreType &unmerged_store) {
   CausalResponse response;
 
-  for (const Key &key : pending_multi_key_metadata[addr].read_set_) {
-    CausalTuple *tp = response.add_tuples();
-    tp->set_key(key);
+  set<Key> populated_keys;
 
-    if (pending_multi_key_metadata[addr].dne_set_.find(key) !=
-        pending_multi_key_metadata[addr].dne_set_.end()) {
-      // key dne
-      tp->set_error(AnnaError::KEY_DNE);
-    } else {
-      tp->set_payload(serialize(*(causal_cut_store.at(key))));
+  for (const Key &key : pending_multi_key_metadata[addr].read_set_) {
+    if (populated_keys.find(key) == populated_keys.end()) {
+      CausalTuple *tp = response.add_tuples();
+      tp->set_key(key);
+
+      if (pending_multi_key_metadata[addr].dne_set_.find(key) !=
+          pending_multi_key_metadata[addr].dne_set_.end()) {
+        // key dne
+        tp->set_error(AnnaError::KEY_DNE);
+      } else {
+        tp->set_payload(serialize(*(causal_cut_store.at(key))));
+      }
+
+      populated_keys.insert(key);
+    }
+
+    // also add any dependency keys
+    for (const auto &pair : causal_cut_store.at(key)->reveal().dependencies.reveal()) {
+      Key dep_key = pair.first;
+
+      if (populated_keys.find(dep_key) == populated_keys.end()) {
+        CausalTuple *dep_tp = response.add_tuples();
+        dep_tp->set_key(dep_key);
+        dep_tp->set_payload(serialize(*(causal_cut_store.at(dep_key))));
+
+        populated_keys.insert(dep_key);
+      }
     }
   }
 
